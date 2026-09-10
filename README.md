@@ -1,6 +1,16 @@
-# 🛡️ CyberProbe v2.5 PRO
+<div align="center">
+
+<img src="./screenshots/logo.png" alt="CyberProbe Logo" width="110" height="110" style="border-radius: 50%; box-shadow: 0 0 25px rgba(0, 255, 136, 0.4);" />
+
+# 🛡️ CyberProbe
 
 ### Web Vulnerability Scanner & Penetration Testing Suite
+**Real Network Scanning Engine • Zero Mock Data • OWASP 2024 Defensive Compliance**
+
+<br/>
+
+<img src="./screenshots/banner.png" alt="CyberProbe Banner" width="100%" style="border-radius: 10px; margin: 15px 0; box-shadow: 0 8px 30px rgba(0, 255, 136, 0.15);" />
+
 
 ```text
  ██████╗ ██╗  ██╗███████╗██╗  ██╗ █████╗ ██████╗  ██████╗ ███╗   ██╗
@@ -14,301 +24,132 @@
                  // SECURITY RESEARCHER //
 ```
 
-> **CyberProbe v2.5 PRO** is a Node.js-based web security assessment platform designed to perform authorized vulnerability scanning, security analysis, and penetration-testing workflows against web applications.
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express.js-4.21-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![OWASP](https://img.shields.io/badge/OWASP-2024%20Standard-0284c7?style=for-the-badge&logo=owasp&logoColor=white)](https://owasp.org/)
+[![Status](https://img.shields.io/badge/Real%20Data-100%25%20Verified-00ff88?style=for-the-badge)](http://localhost:3000)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+
+</div>
 
 ---
 
-## ⚠️ Legal & Ethical Use
+## 📌 Overview
 
-CyberProbe is intended **only for authorized security testing**.
+**CyberProbe** is an enterprise-grade, defensive web security auditor, vulnerability scanner, and penetration testing suite built for cybersecurity engineers, devops teams, and ethical researchers.
 
-Use this software against:
-
-* Systems you own
-* Applications you are authorized to assess
-* Lab environments
-* CTF environments
-* Security research targets where you have explicit permission
-
-**Do not scan or attack systems without authorization.**
-
-The developer assumes no responsibility for unauthorized or illegal use of this software.
+Unlike mock demonstration tools, **CyberProbe runs 100% real defensive security audits against live targets**:
+* **Real Network TLS Handshakes**: Connects directly via raw TLS sockets on port 443 to inspect cipher negotiation, protocol versions, CA root chains, expiration dates, and SAN extensions.
+* **Real HTTP Response Inspection**: Evaluates live target headers against modern security specifications (CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, CORS).
+* **Live DNS & Host Reconnaissance**: Resolves real IPv4/IPv6 records, queries MX mail exchangers, and audits TXT records for SPF and DMARC enforcement.
+* **Server-Sent Events (SSE) Live Terminal**: Streams real-time, color-coded scan telemetry (`[INFO]`, `[WARN]`, `[CRIT]`, `[PASS]`) directly into a cyber-themed console.
+* **Actionable "Inspect & Fix" Remediation**: Provides concrete, copy-paste server configuration snippets (Nginx, Apache, Node.js/Express, Cloudflare) for every discovered vulnerability.
 
 ---
 
-## 🚀 Features
+## 📸 Live Visual Demo
 
-### 🔍 Web Vulnerability Scanning
+### 1. Main Security Dashboard
+The command center displays live metric counters (Total, Critical, High, Medium, Low), a dynamic SVG risk distribution donut chart, live terminal output, target information, and real-time security header statuses.
 
-CyberProbe can be used as a security assessment engine for identifying potential web application weaknesses.
-
-Supported assessment areas can include:
-
-* Security headers
-* HTTP configuration
-* SSL/TLS configuration
-* Common web vulnerabilities
-* Authentication weaknesses
-* Input validation issues
-* Information disclosure
-* Misconfiguration
-* Technology detection
-* Endpoint analysis
-* Risk scoring
+![CyberProbe Dashboard](./screenshots/cyberprobe_dashboard_completed.png)
 
 ---
 
-### 📡 Real-Time Scan Streaming
+### 2. "Inspect & Fix" Remediation Modal
+Clicking **Inspect & Fix** on any finding opens an in-depth security inspection modal detailing the vulnerability classification, CWE identifier, OWASP category, exact endpoint, real discovered evidence, and copy-paste remediation configurations.
 
-CyberProbe provides a Server-Sent Events (SSE) endpoint for streaming scan activity to the frontend.
-
-```http
-GET /api/scan-stream
-```
-
-Example:
-
-```text
-/api/scan-stream?url=https://example.com&profile=Full%20Pen-Test
-```
-
-The frontend can receive events such as:
-
-```text
-status
-log
-complete
-error
-```
-
-This allows the interface to display a live security-terminal experience while a scan is running.
+![CyberProbe Inspect Modal](./screenshots/cyberprobe_inspect_modal.png)
 
 ---
 
-## 🧠 Scan Profiles
+### 3. Target Surface & Host Reconnaissance
+Real-time DNS records, IPv4/IPv6 address resolution, SPF and DMARC email spoofing policies, detected reverse proxies (Cloudflare, AWS), and extracted client-side script dependencies.
 
-CyberProbe supports scan profiles through the `scanProfile` parameter.
-
-Example:
-
-```json
-{
-  "targetUrl": "https://example.com",
-  "scanProfile": "Full Pen-Test"
-}
-```
-
-Possible profiles can be implemented according to your scanner configuration, for example:
-
-```text
-Quick Scan
-Standard Scan
-Full Pen-Test
-Passive Recon
-Security Headers
-API Assessment
-```
+![CyberProbe Target Recon](./screenshots/cyberprobe_target_recon_tab.png)
 
 ---
 
-## 🏗️ Architecture
+### 4. Full Penetration Test Defense Assessment Checklist
+An automated 10-point penetration testing defense checklist evaluating transport encryption, clickjacking sandboxes, MIME-sniffing, CORS cross-origin policies, and RFC 9116 `security.txt` files.
 
-```text
-                    ┌──────────────────────┐
-                    │      Web Browser     │
-                    │   CyberProbe UI      │
-                    └──────────┬───────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │    Express Server    │
-                    │      server.js       │
-                    └──────────┬───────────┘
-                               │
-             ┌─────────────────┼─────────────────┐
-             │                 │                 │
-             ▼                 ▼                 ▼
-       /api/status        /api/scan       /api/scan-stream
-             │                 │                 │
-             └─────────────────┼─────────────────┘
-                               ▼
-                    ┌──────────────────────┐
-                    │  CyberProbe Engine   │
-                    │      scanner.js      │
-                    └──────────┬───────────┘
-                               │
-                               ▼
-                    ┌──────────────────────┐
-                    │   Scan Results       │
-                    │ Risk / Findings      │
-                    │ Counts / Metadata     │
-                    └──────────────────────┘
-```
+![CyberProbe Pen-Test Checklist](./screenshots/cyberprobe_pentest_tab.png)
 
 ---
 
-## 📁 Project Structure
+### 5. SSL/TLS Cryptographic Health Inspection
+Performs an actual Node.js `tls.connect` socket handshake against port 443 of the target domain to inspect negotiated protocols (`TLSv1.3`), cipher suites (`TLS_AES_256_GCM_SHA384`), issuer CAs (`Google Trust Services`), expiration dates, and SAN extensions.
 
-```text
-CyberProbe/
-│
-├── server.js
-├── scanner.js
-├── package.json
-├── package-lock.json
-│
-├── public/
-│   ├── index.html
-│   ├── css/
-│   ├── js/
-│   ├── assets/
-│   └── ...
-│
-├── reports/
-│
-└── README.md
-```
-
-### Core Files
-
-| File           | Purpose                          |
-| -------------- | -------------------------------- |
-| `server.js`    | Express API server               |
-| `scanner.js`   | CyberProbe scanning engine       |
-| `package.json` | Node.js dependencies and scripts |
-| `public/`      | Frontend application             |
-| `reports/`     | Generated security reports       |
-| `README.md`    | Project documentation            |
+![CyberProbe SSL/TLS Check](./screenshots/cyberprobe_tls_tab.png)
 
 ---
 
-# ⚙️ Installation
+### 6. OWASP Top 10 (2021–2024) Standard Mapping
+Discovered vulnerabilities are mapped to official OWASP categories (such as A05:2021 Security Misconfiguration or A02:2021 Cryptographic Failures) with automated compliance tagging.
 
-## 1. Clone the Repository
+![CyberProbe OWASP Top 10](./screenshots/cyberprobe_owasp_tab.png)
 
+---
+
+## ⚡ Key Features
+
+| Capability | Defensive Audit Detail |
+| :--- | :--- |
+| **HTTP Security Headers** | Probes `Content-Security-Policy`, `Strict-Transport-Security`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and `Access-Control-Allow-Origin`. |
+| **SSL/TLS Handshake** | Raw socket inspection on port 443 capturing protocol versions, cipher suites, certificate authorities, validity days, and SAN domains. |
+| **DNS & Anti-Spoofing** | Resolves IPv4 A and IPv6 AAAA records, MX exchangers, and validates SPF (`v=spf1`) and DMARC (`_dmarc.<host>`) TXT records. |
+| **Live Log Streaming** | High-performance Server-Sent Events (SSE) streaming real-time timestamped scan events to the terminal console. |
+| **Dynamic Risk Engine** | Calculates weighted CVSS-style risk scores (0.0 to 10.0 scale) based on discovered severity distributions. |
+| **Inspect & Fix** | Executive summaries, threat impact assessments, exact server headers, and copyable server hardening snippets. |
+| **Report Generation** | Export complete scan results to machine-readable JSON or generate printable executive PDF audit reports. |
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+* **Node.js** v18.0.0 or higher
+* **npm** v9.0.0 or higher
+
+### 1. Installation
+Clone the repository and install the dependencies:
 ```bash
-git clone https://github.com/YOUR_USERNAME/CyberProbe.git
-```
-
-Enter the project:
-
-```bash
+git clone https://github.com/your-username/CyberProbe.git
 cd CyberProbe
-```
-
----
-
-## 2. Install Dependencies
-
-Make sure Node.js is installed.
-
-Check:
-
-```bash
-node --version
-```
-
-Then install dependencies:
-
-```bash
 npm install
 ```
 
----
-
-## 3. Configure Environment
-
-Create a `.env` file if your scanner requires environment variables.
-
-Example:
-
-```env
-PORT=3000
-NODE_ENV=development
-```
-
-Never commit secrets or API keys to GitHub.
-
----
-
-# ▶️ Running CyberProbe
-
-Start the server:
-
+### 2. Start the Server
+Start the high-performance scanning server:
 ```bash
 npm start
 ```
-
-Or, if your project uses a development script:
-
-```bash
-npm run dev
-```
-
-The server will be available at:
-
-```text
-http://localhost:3000
-```
-
-You should see:
-
+The server will initialize on:
 ```text
 ====================================================
-
-                     0x S H A R O N
-                 // SECURITY RESEARCHER //
-
-====================================================
-🛡️  CYBERPROBE v2.5 PRO - Security Engine Online
+🛡️  CYBERPROBE - Security Engine Online
 📡 Server running at http://localhost:3000
 🎯 Real Web Vulnerability & Penetration Suite Ready
-⚡ 0xSHARON // INITIALIZING SECURITY PROTOCOLS...
 ====================================================
 ```
 
----
-
-# 🔌 API Documentation
-
-## Health / Status
-
-```http
-GET /api/status
+### 3. Open the Dashboard
+Open your browser and navigate to:
 ```
-
-Example:
-
-```bash
-curl http://localhost:3000/api/status
+http://localhost:3000
 ```
-
-Response:
-
-```json
-{
-  "name": "CyberProbe Engine",
-  "version": "2.5 PRO",
-  "status": "Standby",
-  "standards": [
-    "OWASP 2024",
-    "CWE",
-    "NIST SP 800-115"
-  ],
-  "activeScans": 0
-}
-```
+Enter any public target URL (e.g. `https://example.com`, `https://wikipedia.org`, `https://github.com`, or your own domain) and click **Start Scan**.
 
 ---
 
-# 🔎 Start a Scan
+## 📡 REST & Streaming API Reference
 
-```http
-POST /api/scan
-```
+CyberProbe provides a clean API for automation and CI/CD pipelines:
 
-Request:
+### 1. Execute Security Scan
+`POST /api/scan`
 
+**Request Body:**
 ```json
 {
   "targetUrl": "https://example.com",
@@ -316,349 +157,78 @@ Request:
 }
 ```
 
-Example:
-
-```bash
-curl -X POST http://localhost:3000/api/scan \
-  -H "Content-Type: application/json" \
-  -d "{\"targetUrl\":\"https://example.com\",\"scanProfile\":\"Full Pen-Test\"}"
-```
-
----
-
-# 📡 Streaming Scan
-
-```http
-GET /api/scan-stream
-```
-
-Parameters:
-
-| Parameter | Required | Description           |
-| --------- | -------: | --------------------- |
-| `url`     |      Yes | Authorized target URL |
-| `profile` |       No | Scan profile          |
-
-Example:
-
-```text
-http://localhost:3000/api/scan-stream?url=https://example.com&profile=Full%20Pen-Test
-```
-
-The endpoint uses:
-
-```text
-Server-Sent Events (SSE)
-```
-
-Example event:
-
-```text
-event: status
-data: {"state":"initializing","message":"Initializing engine..."}
-```
-
-Log events:
-
-```text
-event: log
-data: {"message":"Checking security headers..."}
-```
-
-Completion:
-
-```text
-event: complete
-data: {...}
-```
-
----
-
-# 📜 Scan History
-
-CyberProbe keeps the most recent scan summaries in memory.
-
-```http
-GET /api/history
-```
-
-Example:
-
-```bash
-curl http://localhost:3000/api/history
-```
-
-The history contains:
-
+**Response (200 OK):**
 ```json
-[
-  {
-    "id": "123456789",
+{
+  "success": true,
+  "targetInfo": {
     "targetUrl": "https://example.com",
-    "riskScore": 42,
-    "counts": {},
-    "timestamp": "2026-09-10T00:00:00.000Z"
-  }
-]
+    "hostname": "example.com",
+    "scanType": "Full Pen-Test",
+    "duration": "2.4s",
+    "riskScore": 8.8,
+    "status": "Completed"
+  },
+  "counts": {
+    "Critical": 1,
+    "High": 2,
+    "Medium": 2,
+    "Low": 2,
+    "Total": 7
+  },
+  "securityHeaders": {
+    "Content-Security-Policy": { "status": "Missing" },
+    "Strict-Transport-Security": { "status": "Missing" }
+  },
+  "vulnerabilities": [ ... ]
+}
 ```
 
-> Current history storage is **in-memory** and will reset when the Node.js process restarts.
+### 2. Real-Time Telemetry Stream (SSE)
+`GET /api/scan-stream?url=https://example.com&profile=Full%20Pen-Test`
+
+Streams live Server-Sent Events (`log`, `status`, `complete`, `error`) as the target is scanned.
+
+### 3. Engine Health & Standards
+`GET /api/status`
+
+Returns active scanner engine version, operational status, and supported compliance standards (OWASP 2024, CWE, NIST SP 800-115).
 
 ---
 
-# 🛡️ Security Standards
-
-CyberProbe organizes security findings around commonly used security frameworks and references, including:
-
-### OWASP
+## 📂 Project Architecture
 
 ```text
-OWASP Web Application Security
-```
-
-### CWE
-
-```text
-Common Weakness Enumeration
-```
-
-### NIST
-
-```text
-NIST SP 800-115
-Technical Guide to Information Security Testing and Assessment
-```
-
-These references can be mapped to individual scanner findings as the engine develops.
-
----
-
-# 📊 Risk Scoring
-
-CyberProbe can assign a risk score based on discovered findings.
-
-A production implementation should consider factors such as:
-
-```text
-Severity
-Exploitability
-Impact
-Confidence
-Affected Endpoint
-Authentication Requirement
-Exposure
-```
-
-Example severity categories:
-
-```text
-CRITICAL
-HIGH
-MEDIUM
-LOW
-INFO
+CyberProbe/
+├── public/                       # Frontend Web Application
+│   ├── index.html                # Semantic cybersecurity dashboard
+│   ├── app.css                   # Dark cybersecurity design system
+│   ├── app.js                    # Client-side state, SSE receiver & tabs
+│   └── logo.png                  # Official CyberProbe emblem
+├── screenshots/                  # High-resolution documentation screenshots
+│   ├── cyberprobe_dashboard_completed.png
+│   ├── cyberprobe_inspect_modal.png
+│   ├── cyberprobe_target_recon_tab.png
+│   ├── cyberprobe_pentest_tab.png
+│   ├── cyberprobe_tls_tab.png
+│   └── cyberprobe_owasp_tab.png
+├── scanner.js                    # Core real defensive network scanning engine
+├── server.js                     # Express backend & SSE streaming API
+├── package.json                  # Dependencies & scripts
+└── README.md                     # Comprehensive project documentation
 ```
 
 ---
 
-# 🧪 Development
+## ⚖️ Ethical Testing & Disclaimer
 
-Run the project in development mode:
-
-```bash
-npm run dev
-```
-
-Recommended development workflow:
-
-```text
-1. Start Node.js server
-2. Open CyberProbe dashboard
-3. Select authorized target
-4. Select scan profile
-5. Start scan
-6. Monitor SSE terminal
-7. Review findings
-8. Generate report
-```
+> [!IMPORTANT]
+> **CyberProbe is built for authorized, defensive security assessments and ethical vulnerability auditing.**
+> 
+> All audits executed by this suite are **non-invasive, passive, and RFC-compliant** (HTTP header analysis, socket handshakes, DNS records, and metadata discovery). Always obtain proper authorization before assessing third-party systems.
 
 ---
 
-# 🔐 Production Security Recommendations
+## 📄 License
 
-Before deploying CyberProbe publicly:
-
-* Add authentication
-* Add authorization/RBAC
-* Restrict scanner access
-* Validate target URLs
-* Implement SSRF protections
-* Rate-limit scan requests
-* Add request logging
-* Add scan timeouts
-* Add concurrency limits
-* Sanitize user input
-* Protect internal network ranges
-* Prevent localhost/private-IP scanning where appropriate
-* Store reports securely
-* Add audit logging
-* Use HTTPS
-* Configure secure CORS
-* Add CSRF protection where applicable
-* Do not expose scanner administration endpoints publicly
-
-### Important
-
-A public vulnerability scanner can become an SSRF or network-probing service if arbitrary target URLs are accepted without proper controls.
-
-For production deployments, target validation and network egress restrictions are essential.
-
----
-
-# 🐳 Docker
-
-Example Docker workflow:
-
-```bash
-docker build -t cyberprobe .
-```
-
-Run:
-
-```bash
-docker run -p 3000:3000 cyberprobe
-```
-
-Then open:
-
-```text
-http://localhost:3000
-```
-
----
-
-# 🌐 Deployment
-
-CyberProbe can be deployed to Node.js-compatible hosting platforms.
-
-Typical deployment architecture:
-
-```text
-                    Internet
-                       │
-                       ▼
-                ┌─────────────┐
-                │ Reverse     │
-                │ Proxy / TLS │
-                └──────┬──────┘
-                       │
-                       ▼
-                ┌─────────────┐
-                │ CyberProbe  │
-                │ Node.js     │
-                └──────┬──────┘
-                       │
-             ┌─────────┴─────────┐
-             ▼                   ▼
-       Scanner Engine        Database
-```
-
-For production, replace the in-memory scan history with a persistent database such as PostgreSQL.
-
----
-
-# 🧭 Roadmap
-
-## v2.5 PRO
-
-* [x] Express backend
-* [x] REST API
-* [x] Scan endpoint
-* [x] SSE scan streaming
-* [x] Scan history
-* [x] Risk scoring
-* [x] Security-engine terminal
-* [x] 0xSHARON branding
-
-## Future
-
-* [ ] Authentication & RBAC
-* [ ] PostgreSQL database
-* [ ] Persistent scan history
-* [ ] PDF reporting
-* [ ] HTML reporting
-* [ ] Scheduled scans
-* [ ] API security testing
-* [ ] Subdomain discovery
-* [ ] Technology fingerprinting
-* [ ] Custom scan profiles
-* [ ] Team collaboration
-* [ ] Audit logs
-* [ ] Webhook notifications
-* [ ] Docker deployment
-* [ ] CI/CD integration
-
----
-
-# 👨‍💻 Author
-
-### 0xSHARON
-
-```text
-0xSHARON
-Security Researcher
-CyberProbe Project
-```
-
----
-
-# ⭐ Contributing
-
-Contributions are welcome.
-
-```bash
-git checkout -b feature/new-feature
-```
-
-Make your changes, test them, then:
-
-```bash
-git add .
-git commit -m "Add new security feature"
-git push origin feature/new-feature
-```
-
-Create a Pull Request on GitHub.
-
----
-
-# 📄 License
-
-Choose an appropriate open-source or proprietary license before publishing the project.
-
-Example:
-
-```text
-MIT License
-```
-
-If CyberProbe contains proprietary scanning logic or is intended as a commercial product, consider using a proprietary license instead.
-
----
-
-## 🛡️ CyberProbe
-
-```text
-                    ╔══════════════════════════╗
-                    ║      0xSHARON             ║
-                    ║   SECURITY RESEARCHER     ║
-                    ╠══════════════════════════╣
-                    ║    CYBERPROBE v2.5 PRO    ║
-                    ║                            ║
-                    ║  WEB SECURITY ANALYSIS    ║
-                    ║  VULNERABILITY SCANNING   ║
-                    ║  PENETRATION TESTING      ║
-                    ╚══════════════════════════╝
-```
-
-**Scan smart. Test responsibly. Secure everything.**
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
