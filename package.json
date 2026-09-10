@@ -1,0 +1,14 @@
+{
+  "name": "cyberprobe-scanner",
+  "version": "2.5.0",
+  "description": "CyberProbe — Web Vulnerability Scanner & Penetration Testing Suite",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "cors": "^2.8.5"
+  }
+}

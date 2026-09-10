@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CyberProbe — Web Vulnerability Scanner & Penetration Testing Suite</title>
+  <meta name="description" content="Professional defensive web security auditor, vulnerability scanner, and penetration testing suite. Real HTTP headers inspection, SSL/TLS analysis, and OWASP compliance.">
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="cyber-app">
+    <!-- Top Global Header -->
+    <header class="top-nav">
+      <div class="nav-left">
+        <div class="brand-container">
+          <div class="brand-icon-wrapper">
+            <img src="/logo.png" alt="CyberProbe Logo" class="brand-logo-img">
+          </div>
+          <div class="brand-text">
+            <div class="brand-title-row">
+              <span class="brand-name">CyberProbe</span>
+            </div>
+            <span class="brand-subtext">Web Vulnerability Scanner & Penetration Testing Suite</span>
+          </div>
+        </div>
+
+        <div class="engine-status-badge" id="engineStatusBadge">
+          <span class="pulse-dot green" id="engineDot"></span>
+          <span class="engine-text" id="engineStatusText">Engine: Standby</span>
+        </div>
+
+        <div class="owasp-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <span>OWASP 2024</span>
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <button class="nav-link-btn" id="docsBtn" title="Documentation">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <span>Docs</span>
+        </button>
+
+        <button class="nav-link-btn" id="settingsNavBtn" title="Settings">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span>Settings</span>
+        </button>
+
+        <div class="user-profile-chip">
+          <div class="user-avatar-badge">AD</div>
+          <div class="user-info">
+            <span class="user-name">ADMIN</span>
+            <span class="user-role">Security Researcher</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Layout: Sidebar + Content -->
+    <div class="app-body">
+      <!-- Left Cyber Sidebar -->
+      <aside class="sidebar">
+        <nav class="sidebar-menu">
+          <button class="nav-item active" data-tab="dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <span>Dashboard</span>
+          </button>
+
+          <button class="nav-item" data-tab="target-scan">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="22" y1="12" x2="18" y2="12"/>
+              <line x1="6" y1="12" x2="2" y2="12"/>
+              <line x1="12" y1="6" x2="12" y2="2"/>
+              <line x1="12" y1="22" x2="12" y2="18"/>
+            </svg>
+            <span>Target Scan</span>
+          </button>
+
+          <button class="nav-item" data-tab="vulnerabilities">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="M12 8v4"/>
+              <path d="M12 16h.01"/>
+            </svg>
+            <span>Vulnerability Audit</span>
+          </button>
+
+          <button class="nav-item" data-tab="pentest">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            <span>Full Pen-Test</span>
+          </button>
+
+          <button class="nav-item" data-tab="owasp">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polygon points="12 8 8 12 12 16 16 12 12 8"/>
+            </svg>
+            <span>OWASP Top 10</span>
+          </button>
+
+          <button class="nav-item" data-tab="headers">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            <span>Headers Audit</span>
+          </button>
+
+          <button class="nav-item" data-tab="tls">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span>SSL/TLS Check</span>
+          </button>
+
+          <button class="nav-item" data-tab="live-monitor">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            <span>Live Monitor</span>
+          </button>
+
+          <button class="nav-item" data-tab="reports">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+              <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+            </svg>
+            <span>Reports</span>
+          </button>
+
+          <button class="nav-item" data-tab="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+            <span>Settings</span>
+          </button>
+        </nav>
+
+        <!-- Sidebar Promo Box -->
+        <div class="sidebar-footer-card">
+          <div class="card-glow-radar">
+            <img src="/logo.png" alt="CyberProbe Logo" class="sidebar-logo-img">
+          </div>
+          <div class="card-brand-label">
+            <strong>CyberProbe</strong>
+          </div>
+          <div class="card-tagline">"Scan. Analyze. Secure."</div>
+        </div>
+      </aside>
+
+      <!-- Main Content Viewport -->
+      <main class="main-content">
+        <!-- Dashboard View (Default) -->
+        <div class="tab-view active" id="view-dashboard">
+          <!-- Main Top Action Header -->
+          <div class="dashboard-header-row">
+            <div class="view-title-group">
+              <div class="title-icon-box">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </div>
+              <div>
+                <h1 class="view-title">Dashboard</h1>
+                <p class="view-subtitle">Overview of your security assessments and real scan activity</p>
+              </div>
+            </div>
+
+            <!-- Target Input & Scan Trigger Controls -->
+            <div class="scan-controls-bar">
+              <div class="target-input-wrapper">
+                <svg class="input-globe-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#718096" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </svg>
+                <input type="text" id="targetUrlInput" class="target-url-input" placeholder="https://example.com" value="https://example.com" spellcheck="false" autocomplete="off">
+              </div>
+
+              <div class="select-profile-wrapper">
+                <select id="scanProfileSelect" class="scan-profile-select">
+                  <option value="Full Pen-Test">Full Pen-Test</option>
+                  <option value="Quick Header Audit">Quick Header Audit</option>
+                  <option value="SSL/TLS Security Audit">SSL/TLS Security Audit</option>
+                  <option value="OWASP Top 10 Audit">OWASP Top 10 Audit</option>
+                  <option value="Recon & DNS Check">Recon & DNS Check</option>
+                </select>
+                <svg class="select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </div>
+
+              <button class="start-scan-btn" id="startScanBtn">
+                <span class="btn-spinner" id="btnSpinner"></span>
+                <svg class="play-icon" id="btnPlayIcon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                <span id="btnScanText">Start Scan</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Counter Metric Cards Row -->
+          <div class="metrics-grid">
+            <!-- Total Vulnerabilities -->
+            <div class="metric-card metric-total">
+              <div class="metric-body">
+                <div class="metric-val" id="metricTotal">0</div>
+                <div class="metric-label">Vulnerabilities Found</div>
+              </div>
+              <div class="metric-icon-box danger-ring">
+                <span class="ring-pulse"></span>
+                <span class="exclamation-symbol">!</span>
+              </div>
+            </div>
+
+            <!-- Critical -->
+            <div class="metric-card metric-critical">
+              <div class="metric-body">
+                <div class="metric-val" id="metricCritical">0</div>
+                <div class="metric-label">Critical</div>
+              </div>
+              <div class="metric-icon-box dark-red">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff4757" stroke-width="2">
+                  <path d="M12 2a9 9 0 0 0-9 9c0 3.3 1.8 6.2 4.5 7.7V21a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1v-2.3c2.7-1.5 4.5-4.4 4.5-7.7a9 9 0 0 0-9-9z"/>
+                  <circle cx="9" cy="11" r="1.5" fill="#ff4757"/>
+                  <circle cx="15" cy="11" r="1.5" fill="#ff4757"/>
+                  <path d="M10 18h4"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- High -->
+            <div class="metric-card metric-high">
+              <div class="metric-body">
+                <div class="metric-val" id="metricHigh">0</div>
+                <div class="metric-label">High</div>
+              </div>
+              <div class="metric-icon-box dark-amber">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffa502" stroke-width="2">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Medium -->
+            <div class="metric-card metric-medium">
+              <div class="metric-body">
+                <div class="metric-val" id="metricMedium">0</div>
+                <div class="metric-label">Medium</div>
+              </div>
+              <div class="metric-icon-box dark-cyan">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2ed573" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="16" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Low -->
+            <div class="metric-card metric-low">
+              <div class="metric-body">
+                <div class="metric-val" id="metricLow">0</div>
+                <div class="metric-label">Low</div>
+              </div>
+              <div class="metric-icon-box dark-purple">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a55eea" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Scanned Pages -->
+            <div class="metric-card metric-pages">
+              <div class="metric-body">
+                <div class="metric-val" id="metricPages">1</div>
+                <div class="metric-label">Scanned Pages</div>
+              </div>
+              <div class="metric-icon-box dark-green">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Middle Row: Scan Progress & Terminal | Risk Donut | Target Information -->
+          <div class="middle-grid">
+            <!-- Left Panel: Scan Progress & Live Terminal Console -->
+            <div class="panel-card scan-progress-panel">
+              <div class="panel-header">
+                <div class="header-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffb703" stroke="#ffb703">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                  </svg>
+                  <span>Scan Progress</span>
+                </div>
+                <div class="progress-state">
+                  <span class="status-indicator-dot" id="progressStatusDot"></span>
+                  <span class="status-label" id="progressStatusText">Standby</span>
+                  <span class="status-percent" id="progressPercentText">0%</span>
+                </div>
+              </div>
+
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+              </div>
+
+              <div class="progress-meta-row">
+                <div class="target-subtext">
+                  Scanning: <span class="active-target-url" id="activeScanningTarget">https://example.com</span>
+                </div>
+                <div class="eta-subtext" id="scanTimerText">
+                  Elapsed: 00:00:00 | ETA: --:--:--
+                </div>
+              </div>
+
+              <!-- Live Cyber Terminal Console -->
+              <div class="terminal-container" id="terminalConsole">
+                <div class="terminal-line"><span class="log-time">00:00:00</span> <span class="log-tag tag-info">[INFO]</span> CyberProbe Initialized. Ready to scan real target.</div>
+                <div class="terminal-line"><span class="log-time">00:00:00</span> <span class="log-tag tag-info">[INFO]</span> Enter target URL above and click [Start Scan].</div>
+              </div>
+            </div>
+
+            <!-- Center Panel: Risk Distribution Donut Chart -->
+            <div class="panel-card risk-distribution-panel">
+              <div class="panel-header">
+                <div class="header-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  </svg>
+                  <span>Risk Distribution</span>
+                </div>
+                <button class="expand-btn" title="Detailed View" onclick="switchTab('vulnerabilities')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 3 21 3 21 9"/>
+                    <polyline points="9 21 3 21 3 15"/>
+                    <line x1="21" y1="3" x2="14" y2="10"/>
+                    <line x1="3" y1="21" x2="10" y2="14"/>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="donut-chart-container">
+                <div class="svg-donut-wrapper">
+                  <svg class="donut-svg" viewBox="0 0 200 200">
+                    <!-- Background Circle -->
+                    <circle cx="100" cy="100" r="70" fill="transparent" stroke="#1f2937" stroke-width="24"/>
+                    <!-- Dynamic Slices inserted via JS -->
+                    <g id="donutSlicesGroup"></g>
+                  </svg>
+                  <div class="donut-center-content">
+                    <span class="donut-center-val" id="donutTotalIssues">0</span>
+                    <span class="donut-center-label">Total Issues</span>
+                  </div>
+                </div>
+
+                <div class="chart-legend">
+                  <div class="legend-row">
+                    <span class="legend-bullet crit-bg"></span>
+                    <span class="legend-name">Critical</span>
+                    <span class="legend-count" id="legendCritCount">0</span>
+                    <span class="legend-pct" id="legendCritPct">0%</span>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-bullet high-bg"></span>
+                    <span class="legend-name">High</span>
+                    <span class="legend-count" id="legendHighCount">0</span>
+                    <span class="legend-pct" id="legendHighPct">0%</span>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-bullet med-bg"></span>
+                    <span class="legend-name">Medium</span>
+                    <span class="legend-count" id="legendMedCount">0</span>
+                    <span class="legend-pct" id="legendMedPct">0%</span>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-bullet low-bg"></span>
+                    <span class="legend-name">Low</span>
+                    <span class="legend-count" id="legendLowCount">0</span>
+                    <span class="legend-pct" id="legendLowPct">0%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Panel: Target Information -->
+            <div class="panel-card target-info-panel">
+              <div class="panel-header">
+                <div class="header-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="2" y1="12" x2="22" y2="12"/>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                  </svg>
+                  <span>Target Information</span>
+                </div>
+                <button class="expand-btn" title="View Recon" onclick="switchTab('target-scan')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 3 21 3 21 9"/>
+                    <polyline points="9 21 3 21 3 15"/>
+                    <line x1="21" y1="3" x2="14" y2="10"/>
+                    <line x1="3" y1="21" x2="10" y2="14"/>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="target-info-list">
+                <div class="info-row">
+                  <span class="info-key">Target</span>
+                  <span class="info-val target-link" id="targetInfoUrl">https://example.com</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Scan Type</span>
+                  <span class="info-val" id="targetInfoScanType">Full Pen-Test</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Start Time</span>
+                  <span class="info-val" id="targetInfoStartTime">--</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Duration</span>
+                  <span class="info-val" id="targetInfoDuration">--</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Discovered URLs</span>
+                  <span class="info-val" id="targetInfoUrls">--</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Technologies</span>
+                  <span class="info-val highlight-tech" id="targetInfoTech">Awaiting Scan...</span>
+                </div>
+                <div class="info-row risk-score-row">
+                  <span class="info-key">Risk Score</span>
+                  <div class="risk-score-display">
+                    <span class="risk-score-number" id="targetInfoRiskScore">0.0 / 10</span>
+                    <div class="risk-score-bar-bg">
+                      <div class="risk-score-bar-fill" id="riskScoreBarFill" style="width: 0%;"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="info-row">
+                  <span class="info-key">Status</span>
+                  <div class="status-indicator-badge" id="targetStatusBadge">
+                    <span class="pulse-dot green"></span>
+                    <span id="targetStatusText">Standby</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Row: Top Vulnerabilities Table | Security Headers Status -->
+          <div class="bottom-grid">
+            <!-- Left: Top Vulnerabilities Table -->
+            <div class="panel-card vulnerabilities-table-panel">
+              <div class="panel-header">
+                <div class="header-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  </svg>
+                  <span>Top Vulnerabilities</span>
+                </div>
+                <div class="header-actions">
+                  <button class="view-all-link" onclick="switchTab('vulnerabilities')">
+                    View All &rarr;
+                  </button>
+                </div>
+              </div>
+
+              <div class="vuln-table-responsive">
+                <table class="vuln-table">
+                  <thead>
+                    <tr>
+                      <th class="th-num">#</th>
+                      <th class="th-vuln">Vulnerability</th>
+                      <th class="th-sev">Severity</th>
+                      <th class="th-end">Endpoint</th>
+                      <th class="th-stat">Status</th>
+                      <th class="th-act">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="vulnTableBody">
+                    <tr>
+                      <td colspan="6" class="empty-table-cell">No scan performed yet. Enter a target URL and click <strong>Start Scan</strong>.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right: Security Headers Status Checklist -->
+            <div class="panel-card headers-status-panel">
+              <div class="panel-header">
+                <div class="header-title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <polyline points="9 12 11 14 15 10"/>
+                  </svg>
+                  <span>Security Headers Status</span>
+                </div>
+                <button class="check-now-btn" id="checkHeadersNowBtn" title="Run real header inspection">
+                  Check Now
+                </button>
+              </div>
+
+              <div class="headers-checklist" id="headersChecklistContainer">
+                <!-- Content-Security-Policy -->
+                <div class="header-check-item" id="item-CSP">
+                  <div class="header-info">
+                    <span class="header-title-dot"></span>
+                    <span class="header-name">Content-Security-Policy (CSP)</span>
+                  </div>
+                  <div class="header-badge missing" id="badge-CSP">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <span>Missing</span>
+                  </div>
+                </div>
+
+                <!-- Strict-Transport-Security -->
+                <div class="header-check-item" id="item-HSTS">
+                  <div class="header-info">
+                    <span class="header-title-dot"></span>
+                    <span class="header-name">Strict-Transport-Security (HSTS)</span>
+                  </div>
+                  <div class="header-badge present" id="badge-HSTS">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Present</span>
+                  </div>
+                </div>
+
+                <!-- X-Frame-Options -->
+                <div class="header-check-item" id="item-XFO">
+                  <div class="header-info">
+                    <span class="header-title-dot"></span>
+                    <span class="header-name">X-Frame-Options</span>
+                  </div>
+                  <div class="header-badge present" id="badge-XFO">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Present</span>
+                  </div>
+                </div>
+
+                <!-- X-Content-Type-Options -->
+                <div class="header-check-item" id="item-XCTO">
+                  <div class="header-info">
+                    <span class="header-title-dot"></span>
+                    <span class="header-name">X-Content-Type-Options</span>
+                  </div>
+                  <div class="header-badge present" id="badge-XCTO">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>Present</span>
+                  </div>
+                </div>
+
+                <!-- Referrer-Policy -->
+                <div class="header-check-item" id="item-REFPOL">
+                  <div class="header-info">
+                    <span class="header-title-dot"></span>
+                    <span class="header-name">Referrer-Policy</span>
+                  </div>
+                  <div class="header-badge warn" id="badge-REFPOL">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+                    <span>Not Set</span>
+                  </div>
+                </div>
+
+                <!-- Permissions-Policy -->
+                <div class="header-check-item" id="item-PERMPOL">
+                  <div class="header-info">
+                    <span class="header-title-dot"></span>
+                    <span class="header-name">Permissions-Policy</span>
+                  </div>
+                  <div class="header-badge missing" id="badge-PERMPOL">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <span>Missing</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Cards Row -->
+          <div class="quick-action-cards-grid">
+            <div class="action-card" onclick="switchTab('owasp')">
+              <div class="action-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polygon points="12 8 8 12 12 16 16 12 12 8"/>
+                </svg>
+              </div>
+              <div class="action-card-content">
+                <div class="action-card-title">OWASP Top 10</div>
+                <div class="action-card-sub">Check top web risks</div>
+              </div>
+              <div class="action-card-arrow">&rsaquo;</div>
+            </div>
+
+            <div class="action-card" onclick="switchTab('headers')">
+              <div class="action-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </div>
+              <div class="action-card-content">
+                <div class="action-card-title">Headers Audit</div>
+                <div class="action-card-sub">Analyze security headers</div>
+              </div>
+              <div class="action-card-arrow">&rsaquo;</div>
+            </div>
+
+            <div class="action-card" onclick="switchTab('tls')">
+              <div class="action-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </div>
+              <div class="action-card-content">
+                <div class="action-card-title">SSL/TLS Check</div>
+                <div class="action-card-sub">Certificate & crypto health</div>
+              </div>
+              <div class="action-card-arrow">&rsaquo;</div>
+            </div>
+
+            <div class="action-card" onclick="switchTab('live-monitor')">
+              <div class="action-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+              </div>
+              <div class="action-card-content">
+                <div class="action-card-title">Live Probe</div>
+                <div class="action-card-sub">Telemetry & packet stream</div>
+              </div>
+              <div class="action-card-arrow">&rsaquo;</div>
+            </div>
+
+            <div class="action-card" onclick="switchTab('reports')">
+              <div class="action-card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+              </div>
+              <div class="action-card-content">
+                <div class="action-card-title">Reports</div>
+                <div class="action-card-sub">Generate detailed reports</div>
+              </div>
+              <div class="action-card-arrow">&rsaquo;</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Target Surface & Recon View Tab -->
+        <div class="tab-view" id="view-target-scan">
+          <div class="view-header-bar">
+            <h2>Target Surface & Host Reconnaissance</h2>
+            <p class="section-desc">Live domain infrastructure, IP routing, DNS records, email security policies, and detected frontend scripts.</p>
+          </div>
+          <div class="recon-grid" id="targetScanDetailsContainer">
+            <div class="empty-state">No target reconnaissance available. Run a scan to discover assets.</div>
+          </div>
+        </div>
+
+        <!-- Full Pen-Test Execution Tab -->
+        <div class="tab-view" id="view-pentest">
+          <div class="view-header-bar">
+            <h2>Full Pen-Test Defense Suite Assessment</h2>
+            <p class="section-desc">Automated penetration testing evaluation checklist against live target endpoints and defensive hardening.</p>
+          </div>
+          <div class="pentest-grid" id="pentestChecksContainer">
+            <div class="empty-state">Execute a scan to run the penetration test checklist.</div>
+          </div>
+        </div>
+
+        <!-- Vulnerabilities Full View Tab -->
+        <div class="tab-view" id="view-vulnerabilities">
+          <div class="view-header-bar">
+            <h2>Vulnerability Audit & Defense Findings</h2>
+            <div class="filter-group">
+              <button class="filter-pill active" data-filter="all">All (<span id="count-all">0</span>)</button>
+              <button class="filter-pill" data-filter="Critical">Critical (<span id="count-crit">0</span>)</button>
+              <button class="filter-pill" data-filter="High">High (<span id="count-high">0</span>)</button>
+              <button class="filter-pill" data-filter="Medium">Medium (<span id="count-med">0</span>)</button>
+              <button class="filter-pill" data-filter="Low">Low (<span id="count-low">0</span>)</button>
+            </div>
+          </div>
+          <div class="vuln-cards-list" id="vulnCardsContainer">
+            <div class="empty-state">No vulnerabilities detected or target has not been scanned yet.</div>
+          </div>
+        </div>
+
+        <!-- OWASP Top 10 View Tab -->
+        <div class="tab-view" id="view-owasp">
+          <div class="view-header-bar">
+            <h2>OWASP Top 10 (2021-2024) Standard Mapping</h2>
+            <p class="section-desc">Defensive evaluation of application architecture and endpoint hardening against industry-standard OWASP classifications.</p>
+          </div>
+          <div class="owasp-cards-grid" id="owaspGridContainer"></div>
+        </div>
+
+        <!-- SSL / TLS View Tab -->
+        <div class="tab-view" id="view-tls">
+          <div class="view-header-bar">
+            <h2>SSL/TLS Cryptographic Health & Handshake Verification</h2>
+            <p class="section-desc">Real-time socket inspection of public key cryptography, cipher negotiations, certificate authority chains, and SAN configurations.</p>
+          </div>
+          <div class="tls-details-wrapper" id="tlsDetailsContainer">
+            <div class="empty-state">No TLS data available. Run a scan against an HTTPS target to inspect certificates.</div>
+          </div>
+        </div>
+
+        <!-- Headers Audit Detailed View Tab -->
+        <div class="tab-view" id="view-headers">
+          <div class="view-header-bar">
+            <h2>Complete HTTP Response Headers Inspector</h2>
+            <p class="section-desc">Live capture of all HTTP response headers with automated security assessment against RFC specifications.</p>
+          </div>
+          <div class="headers-audit-wrapper" id="headersAuditContainer">
+            <div class="empty-state">No headers captured yet. Execute a scan to inspect raw server headers.</div>
+          </div>
+        </div>
+
+        <!-- Live Monitor / Telemetry View Tab -->
+        <div class="tab-view" id="view-live-monitor">
+          <div class="view-header-bar">
+            <h2>Live Probe Telemetry & Console Stream</h2>
+            <p class="section-desc">Real-time terminal output stream, network latency, and defensive reconnaissance logging.</p>
+          </div>
+          <div class="monitor-terminal-card">
+            <div class="terminal-bar">
+              <div class="terminal-dot red"></div>
+              <div class="terminal-dot yellow"></div>
+              <div class="terminal-dot green"></div>
+              <span class="terminal-title">CYBERPROBE REALTIME PACKET & LOG STREAM</span>
+              <button class="clear-terminal-btn" onclick="clearTerminal()">Clear Terminal</button>
+            </div>
+            <div class="expanded-terminal" id="expandedTerminalConsole">
+              <div class="terminal-line"><span class="log-time">00:00:00</span> <span class="log-tag tag-info">[INFO]</span> Ready for network event streams.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reports View Tab -->
+        <div class="tab-view" id="view-reports">
+          <div class="view-header-bar">
+            <h2>Security Audit Reports & Compliance Documentation</h2>
+            <p class="section-desc">Export and download audit reports for management, developers, and compliance stakeholders.</p>
+          </div>
+          <div class="reports-action-panel">
+            <div class="report-card">
+              <div class="report-icon-box">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+              </div>
+              <div class="report-card-info">
+                <h3>Executive Security Audit Report (Print / PDF)</h3>
+                <p>Comprehensive report with risk metrics, discovered vulnerabilities, raw evidence, and implementation roadmaps.</p>
+                <button class="btn-action green-outline" onclick="printReport()">Print / Export PDF</button>
+              </div>
+            </div>
+
+            <div class="report-card">
+              <div class="report-icon-box">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00e1ff" stroke-width="2">
+                  <polyline points="16 18 22 12 16 6"/>
+                  <polyline points="8 6 2 12 8 18"/>
+                </svg>
+              </div>
+              <div class="report-card-info">
+                <h3>Raw Scan JSON Export</h3>
+                <p>Machine-readable JSON schema including all parsed headers, TLS certificates, DNS records, and vulnerability findings.</p>
+                <button class="btn-action blue-outline" onclick="downloadJsonReport()">Download JSON</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings View Tab -->
+        <div class="tab-view" id="view-settings">
+          <div class="view-header-bar">
+            <h2>Engine Configuration & Scanner Settings</h2>
+            <p class="section-desc">Configure timeout thresholds, user-agent signatures, and automated audit rules.</p>
+          </div>
+          <div class="settings-grid">
+            <div class="setting-item">
+              <label>Scanner User-Agent</label>
+              <input type="text" class="setting-input" value="Mozilla/5.0 (Windows NT 10.0; Win64; x64) CyberProbe/2.5" readonly>
+            </div>
+            <div class="setting-item">
+              <label>Socket Timeout Threshold</label>
+              <input type="text" class="setting-input" value="8000ms" readonly>
+            </div>
+            <div class="setting-item">
+              <label>Audit Profile</label>
+              <input type="text" class="setting-input" value="OWASP 2024 / Non-Invasive Passive Security Audit" readonly>
+            </div>
+            <div class="setting-item">
+              <label>Engine Version</label>
+              <input type="text" class="setting-input" value="CyberProbe (Node.js High Performance Backend)" readonly>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- App Global Footer -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <span class="footer-brand">CyberProbe</span>
+        <span class="footer-divider">|</span>
+        <span>Built for Ethical Hackers</span>
+        <span class="footer-divider">|</span>
+        <span>OWASP 2024</span>
+        <span class="footer-divider">|</span>
+        <span>Open Source Security</span>
+      </div>
+      <div class="footer-right">
+        <em>Scan Responsibly. For Authorized Testing Only.</em>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Interactive "Inspect & Fix" Modal -->
+  <div class="modal-overlay" id="inspectModal" style="display: none;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <span class="modal-sev-badge" id="modalSevBadge">Critical</span>
+          <h2 class="modal-vuln-title" id="modalVulnTitle">Missing Content-Security-Policy (CSP)</h2>
+        </div>
+        <button class="modal-close-btn" onclick="closeInspectModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-meta-grid">
+          <div class="meta-block">
+            <span class="meta-label">CWE IDENTIFIER</span>
+            <span class="meta-value highlight" id="modalCwe">CWE-693</span>
+          </div>
+          <div class="meta-block">
+            <span class="meta-label">OWASP CATEGORY</span>
+            <span class="meta-value" id="modalOwasp">A05:2021-Security Misconfiguration</span>
+          </div>
+          <div class="meta-block">
+            <span class="meta-label">AFFECTED ENDPOINT</span>
+            <span class="meta-value code" id="modalEndpoint">/</span>
+          </div>
+          <div class="meta-block">
+            <span class="meta-label">CURRENT STATUS</span>
+            <span class="meta-value status-open" id="modalStatus">Open (Unresolved)</span>
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <h3>Vulnerability Description</h3>
+          <p id="modalDescription"></p>
+        </div>
+
+        <div class="modal-section">
+          <h3>Threat & Business Impact</h3>
+          <p id="modalImpact"></p>
+        </div>
+
+        <div class="modal-section">
+          <h3>Real Discovered Evidence</h3>
+          <div class="evidence-box" id="modalEvidence"></div>
+        </div>
+
+        <div class="modal-section">
+          <div class="remediation-header-row">
+            <h3>Remediation & Configuration Snippet</h3>
+            <button class="copy-code-btn" onclick="copySnippet()">Copy Code</button>
+          </div>
+          <p class="remediation-summary" id="modalRemediationSummary"></p>
+          <div class="code-editor-box">
+            <pre><code id="modalCodeSnippet"></code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-action gray-btn" onclick="closeInspectModal()">Close</button>
+        <button class="btn-action green-btn" onclick="markAsResolved()">Mark as Resolved</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
