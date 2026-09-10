@@ -795,9 +795,26 @@
                 </svg>
               </div>
               <div class="report-card-info">
-                <h3>Executive Security Audit Report (Print / PDF)</h3>
-                <p>Comprehensive report with risk metrics, discovered vulnerabilities, raw evidence, and implementation roadmaps.</p>
-                <button class="btn-action green-outline" onclick="printReport()">Print / Export PDF</button>
+                <h3>Executive Security Audit Report (PDF / Print)</h3>
+                <p>Comprehensive report featuring official banner, emblem, target surface reconnaissance, cryptographic TLS handshakes, HTTP security headers, and mitigation blueprints.</p>
+                <div style="display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap;">
+                  <button class="btn-action green-btn" onclick="generatePdfReport()" id="btnGeneratePdf">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Download PDF Report
+                  </button>
+                  <button class="btn-action green-outline" onclick="printReport()" id="btnPrintPdf">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                      <polyline points="6 9 6 2 18 2 18 9"/>
+                      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                      <rect x="6" y="14" width="12" height="8"/>
+                    </svg>
+                    Print / Save via Browser
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -927,6 +944,7 @@
     </div>
   </div>
 
+  <script src="html2pdf.bundle.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

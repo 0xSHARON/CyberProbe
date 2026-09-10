@@ -1,5 +1,5 @@
 {
-  "name": "cyberprobe-scanner",
+  "name": "CyberProbe",
   "version": "2.5.0",
   "description": "CyberProbe — Web Vulnerability Scanner & Penetration Testing Suite",
   "main": "server.js",

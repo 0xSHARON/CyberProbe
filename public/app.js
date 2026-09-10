@@ -761,13 +761,331 @@ function markAsResolved() {
   }
 }
 
-// Export Reports
-function printReport() {
-  if (!currentScanData) {
-    alert('Please execute a scan first before generating a report.');
+// Helper: Ensure scan data is available before generating reports
+async function ensureReportScanData(callback, btn) {
+  if (currentScanData) {
+    callback(currentScanData);
     return;
   }
-  window.print();
+  
+  const target = (targetUrlInput && targetUrlInput.value.trim()) || 'https://example.com';
+  const originalText = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner" style="display:inline-block; width:12px; height:12px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:6px;"></span> Auditing ${target}...`;
+  }
+  
+  try {
+    const res = await fetch('/api/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetUrl: target, scanProfile: 'Full Pen-Test' })
+    });
+    const data = await res.json();
+    if (data.success) {
+      currentScanData = data;
+      renderFullScan(data);
+      callback(data);
+    } else {
+      alert('Could not generate report: ' + (data.error || 'Scan failed'));
+    }
+  } catch (err) {
+    alert('Error connecting to scanner engine: ' + err.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  }
+}
+
+// Generate self-contained HTML for the Executive Audit Report
+function buildExecutiveReportHtml(data) {
+  const target = data.targetInfo || {};
+  const counts = data.counts || { Total: 0, Critical: 0, High: 0, Medium: 0, Low: 0 };
+  const headers = data.securityHeaders || {};
+  const recon = data.recon || {};
+  const tls = data.tls || {};
+  const vulns = data.vulnerabilities || [];
+  const origin = window.location.origin;
+
+  const riskScore = typeof target.riskScore === 'number' ? target.riskScore.toFixed(1) : (target.riskScore || '0.0');
+  const riskClass = riskScore >= 7.0 ? '#ff4757' : riskScore >= 4.0 ? '#ffa502' : '#00ff88';
+  const riskLabel = riskScore >= 7.0 ? 'CRITICAL RISK' : riskScore >= 4.0 ? 'MEDIUM RISK' : 'LOW RISK';
+
+  // Build headers rows
+  const headerRowsHtml = Object.entries(headers).map(([name, item]) => {
+    const statusColor = item.status === 'Pass' ? '#00ff88' : item.status === 'Missing' ? '#ff4757' : '#ffa502';
+    const statusBg = item.status === 'Pass' ? 'rgba(0, 255, 136, 0.1)' : item.status === 'Missing' ? 'rgba(255, 71, 87, 0.1)' : 'rgba(255, 165, 2, 0.1)';
+    return `
+      <tr>
+        <td style="padding: 10px 12px; font-weight: 600; font-family: monospace; border-bottom: 1px solid #233546; color: #e2e8f0;">${name}</td>
+        <td style="padding: 10px 12px; border-bottom: 1px solid #233546;">
+          <span style="display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; color: ${statusColor}; background: ${statusBg}; border: 1px solid ${statusColor};">${item.status.toUpperCase()}</span>
+        </td>
+        <td style="padding: 10px 12px; font-family: monospace; font-size: 12px; color: #94a3b8; border-bottom: 1px solid #233546; word-break: break-all;">${item.value || 'Not Configured (Missing)'}</td>
+        <td style="padding: 10px 12px; font-size: 12px; color: #cbd5e1; border-bottom: 1px solid #233546;">${item.evaluation || item.recommendation || 'Standard defense'}</td>
+      </tr>
+    `;
+  }).join('');
+
+  // Build vulnerabilities rows
+  const vulnCardsHtml = vulns.map((v, idx) => {
+    const sevColor = v.severity === 'Critical' ? '#ff4757' : v.severity === 'High' ? '#ffa502' : v.severity === 'Medium' ? '#00e1ff' : '#00ff88';
+    return `
+      <div style="margin-bottom: 18px; padding: 16px; background: #0c1622; border: 1px solid #233546; border-left: 4px solid ${sevColor}; border-radius: 6px; page-break-inside: avoid;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 15px; font-weight: 700; color: #f8fafc;">#${idx + 1}. ${v.title}</span>
+          <span style="background: ${sevColor}; color: #000; font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 4px;">${v.severity.toUpperCase()}</span>
+        </div>
+        <div style="display: flex; gap: 15px; font-size: 12px; color: #00ff88; margin-bottom: 10px; font-family: monospace;">
+          <span><strong>OWASP:</strong> ${v.category}</span>
+          <span><strong>CWE:</strong> ${v.cwe}</span>
+        </div>
+        <div style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 10px;">${v.description}</div>
+        <div style="background: #060b11; border: 1px solid #1a2736; padding: 10px 12px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #ff6b81; margin-bottom: 10px; word-break: break-all;">
+          <strong>Discovered Evidence:</strong> ${v.evidence}
+        </div>
+        ${v.remediationSnippet ? `
+          <div style="background: #05080c; border: 1px solid #1e293b; padding: 10px; border-radius: 4px;">
+            <div style="font-size: 11px; color: #00ff88; font-weight: 700; margin-bottom: 4px; text-transform: uppercase;">Hardening Configuration Snippet</div>
+            <pre style="margin: 0; font-family: 'Fira Code', monospace; font-size: 11px; color: #e2e8f0; white-space: pre-wrap; word-break: break-all;"><code>${v.remediationSnippet}</code></pre>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div id="cyberprobe-report-document" style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #060c14; color: #f1f5f9; padding: 24px; max-width: 900px; margin: 0 auto; box-sizing: border-box;">
+      
+      <!-- Top Banner -->
+      <div style="margin-bottom: 20px; text-align: center; background: #000; border-radius: 10px; overflow: hidden; border: 1px solid #1e293b;">
+        <img src="${origin}/banner.png" alt="CyberProbe Banner" style="width: 100%; max-height: 200px; object-fit: cover; display: block;" onerror="this.style.display='none'" />
+      </div>
+
+      <!-- Header & Title with Logo -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #00ff88; padding-bottom: 16px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <img src="${origin}/logo.png" alt="CyberProbe Emblem" style="width: 68px; height: 68px; border-radius: 50%; border: 2px solid #00ff88; box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);" />
+          <div>
+            <h1 style="margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 0.5px; color: #ffffff;">CYBERPROBE</h1>
+            <div style="font-size: 13px; color: #00ff88; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">Executive Web Vulnerability & Penetration Audit</div>
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">OWASP 2024 Defensive Compliance Standard • RFC 9116 Compliant</div>
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <div style="display: inline-block; padding: 6px 14px; border-radius: 6px; font-weight: 800; font-size: 14px; color: ${riskClass}; border: 1px solid ${riskClass}; background: rgba(0,0,0,0.5);">
+            SCORE: ${riskScore} / 10.0
+          </div>
+          <div style="font-size: 11px; color: ${riskClass}; font-weight: 700; margin-top: 4px;">${riskLabel}</div>
+        </div>
+      </div>
+
+      <!-- Metadata Box -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; background: #0c1622; border: 1px solid #1e293b; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px;">
+        <div>
+          <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700;">Target URL</div>
+          <div style="font-size: 13px; font-weight: 700; color: #38bdf8; word-break: break-all; margin-top: 2px;">${target.targetUrl || 'N/A'}</div>
+        </div>
+        <div>
+          <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700;">Host IP / Proxy</div>
+          <div style="font-size: 13px; font-weight: 600; color: #e2e8f0; margin-top: 2px;">${recon.ipAddresses ? recon.ipAddresses.join(', ') : (recon.reverseProxy || 'Resolved')}</div>
+        </div>
+        <div>
+          <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700;">Audit Date & Time</div>
+          <div style="font-size: 13px; font-weight: 600; color: #e2e8f0; margin-top: 2px;">${new Date().toLocaleString()}</div>
+        </div>
+        <div>
+          <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700;">Auditor In-Charge</div>
+          <div style="font-size: 13px; font-weight: 700; color: #00ff88; margin-top: 2px;">0xSHARON</div>
+        </div>
+      </div>
+
+      <!-- Severity Metrics Counter Cards -->
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 24px;">
+        <div style="background: #0f1c2b; border: 1px solid #1e293b; padding: 12px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 22px; font-weight: 800; color: #ffffff;">${counts.Total}</div>
+          <div style="font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Total Findings</div>
+        </div>
+        <div style="background: #0f1c2b; border: 1px solid #ff4757; padding: 12px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 22px; font-weight: 800; color: #ff4757;">${counts.Critical}</div>
+          <div style="font-size: 10px; color: #ff4757; font-weight: 700; text-transform: uppercase;">Critical</div>
+        </div>
+        <div style="background: #0f1c2b; border: 1px solid #ffa502; padding: 12px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 22px; font-weight: 800; color: #ffa502;">${counts.High}</div>
+          <div style="font-size: 10px; color: #ffa502; font-weight: 700; text-transform: uppercase;">High</div>
+        </div>
+        <div style="background: #0f1c2b; border: 1px solid #00e1ff; padding: 12px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 22px; font-weight: 800; color: #00e1ff;">${counts.Medium}</div>
+          <div style="font-size: 10px; color: #00e1ff; font-weight: 700; text-transform: uppercase;">Medium</div>
+        </div>
+        <div style="background: #0f1c2b; border: 1px solid #00ff88; padding: 12px; border-radius: 6px; text-align: center;">
+          <div style="font-size: 22px; font-weight: 800; color: #00ff88;">${counts.Low}</div>
+          <div style="font-size: 10px; color: #00ff88; font-weight: 700; text-transform: uppercase;">Low / Info</div>
+        </div>
+      </div>
+
+      <!-- Section 1: Recon & SSL/TLS Technical Summary -->
+      <div style="margin-bottom: 24px; background: #0b131e; border: 1px solid #1e293b; border-radius: 8px; padding: 16px;">
+        <h3 style="margin-top: 0; font-size: 15px; color: #00ff88; border-bottom: 1px solid #1e293b; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+          <span>🌐</span> 1. Infrastructure & SSL/TLS Cryptographic Health
+        </h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 12px; margin-top: 10px;">
+          <div>
+            <div style="color: #64748b; font-weight: 700;">HOST RECONNAISSANCE</div>
+            <div style="margin-top: 4px; color: #cbd5e1;">• IP Addresses: <strong>${recon.ipAddresses ? recon.ipAddresses.join(', ') : 'Resolved'}</strong></div>
+            <div style="margin-top: 2px; color: #cbd5e1;">• Reverse Proxy / CDN: <strong>${recon.reverseProxy || 'Direct / None Detected'}</strong></div>
+            <div style="margin-top: 2px; color: #cbd5e1;">• SPF Anti-Spoofing: <strong>${recon.hasSpf ? 'Configured (Pass)' : 'Missing (Fail)'}</strong></div>
+            <div style="margin-top: 2px; color: #cbd5e1;">• DMARC Policy: <strong>${recon.hasDmarc ? 'Configured (Pass)' : 'Missing (Fail)'}</strong></div>
+          </div>
+          <div>
+            <div style="color: #64748b; font-weight: 700;">SOCKET TLS HANDSHAKE</div>
+            <div style="margin-top: 4px; color: #cbd5e1;">• Negotiated Protocol: <strong>${tls.protocol || 'TLSv1.3'}</strong></div>
+            <div style="margin-top: 2px; color: #cbd5e1;">• Cipher Suite: <strong>${tls.cipher || 'TLS_AES_256_GCM_SHA384'}</strong></div>
+            <div style="margin-top: 2px; color: #cbd5e1;">• Certificate Authority: <strong>${tls.issuer || 'Trusted Public CA'}</strong></div>
+            <div style="margin-top: 2px; color: #cbd5e1;">• Certificate Validity: <strong>${tls.validTo || 'Valid'} (${tls.daysRemaining || '365'} days left)</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Security Headers Audit Table -->
+      <div style="margin-bottom: 24px; background: #0b131e; border: 1px solid #1e293b; border-radius: 8px; padding: 16px; page-break-inside: avoid;">
+        <h3 style="margin-top: 0; font-size: 15px; color: #00ff88; border-bottom: 1px solid #1e293b; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+          <span>🛡️</span> 2. HTTP Defensive Security Headers Assessment
+        </h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px;">
+          <thead>
+            <tr style="background: #0f1c2b; text-align: left; color: #94a3b8;">
+              <th style="padding: 8px 12px; border-bottom: 2px solid #233546;">Header Name</th>
+              <th style="padding: 8px 12px; border-bottom: 2px solid #233546;">Status</th>
+              <th style="padding: 8px 12px; border-bottom: 2px solid #233546;">Discovered Header Value</th>
+              <th style="padding: 8px 12px; border-bottom: 2px solid #233546;">Defensive Impact</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${headerRowsHtml}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Section 3: Vulnerabilities & Remediation Blueprints -->
+      <div style="margin-bottom: 24px;">
+        <h3 style="font-size: 16px; color: #00ff88; border-bottom: 1px solid #1e293b; padding-bottom: 8px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+          <span>⚠️</span> 3. Detailed Vulnerability Findings & Hardening Configurations (${vulns.length})
+        </h3>
+        ${vulnCardsHtml || '<div style="padding: 20px; text-align: center; color: #00ff88;">No critical vulnerabilities discovered. System meets defensive baseline.</div>'}
+      </div>
+
+      <!-- Footer & Signature -->
+      <div style="border-top: 2px solid #1e293b; padding-top: 16px; margin-top: 30px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #64748b;">
+        <div>
+          <div><strong>Report Generated by:</strong> CyberProbe Web Vulnerability Scanner</div>
+          <div><strong>Lead Security Researcher:</strong> 0xSHARON</div>
+        </div>
+        <div style="text-align: right;">
+          <div>Confidential Security Audit Document • Authorized Penetration Testing</div>
+          <div>Standards: OWASP 2024 • CWE • RFC 9116</div>
+        </div>
+      </div>
+
+    </div>
+  `;
+}
+
+// Download Executive PDF using html2pdf
+async function generatePdfReport() {
+  const btn = document.getElementById('btnGeneratePdf');
+  ensureReportScanData(async (data) => {
+    const targetHost = (data.targetInfo && data.targetInfo.hostname) || 'target';
+    const reportHtml = buildExecutiveReportHtml(data);
+
+    // Create render container
+    let container = document.getElementById('cyberprobe-pdf-sandbox');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'cyberprobe-pdf-sandbox';
+      container.style.position = 'fixed';
+      container.style.left = '-99999px';
+      container.style.top = '0';
+      container.style.width = '850px';
+      document.body.appendChild(container);
+    }
+    container.innerHTML = reportHtml;
+
+    if (typeof html2pdf !== 'undefined') {
+      const originalText = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner" style="display:inline-block; width:12px; height:12px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:6px;"></span> Generating PDF...`;
+      }
+
+      const opt = {
+        margin: [6, 6, 6, 6],
+        filename: `CyberProbe-Executive-Report-${targetHost}-${Date.now()}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      try {
+        await html2pdf().set(opt).from(container.querySelector('#cyberprobe-report-document')).save();
+      } catch (err) {
+        console.warn('html2pdf generation error, falling back to print window:', err);
+        printReport();
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+        }
+      }
+    } else {
+      printReport();
+    }
+  }, btn);
+}
+
+// Print Report in dedicated styled window (Native browser Save as PDF)
+function printReport() {
+  const btn = document.getElementById('btnPrintPdf');
+  ensureReportScanData((data) => {
+    const reportHtml = buildExecutiveReportHtml(data);
+    const printWindow = window.open('', '_blank', 'width=950,height=800');
+    if (!printWindow) {
+      alert('Popup blocked. Please allow popups to open the printable PDF report.');
+      return;
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>CyberProbe Security Audit - ${(data.targetInfo && data.targetInfo.hostname) || 'Report'}</title>
+        <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+        <style>
+          * { box-sizing: border-box; }
+          body { margin: 0; padding: 20px; background: #060c14; color: #f1f5f9; font-family: 'Inter', sans-serif; }
+          @media print {
+            body { padding: 0; background: #060c14 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            @page { margin: 10mm; size: A4; }
+          }
+        </style>
+      </head>
+      <body>
+        ${reportHtml}
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 500);
+          };
+        </script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  }, btn);
 }
 
 function downloadJsonReport() {
